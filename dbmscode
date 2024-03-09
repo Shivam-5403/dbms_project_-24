@@ -1,0 +1,49 @@
+[09/03, 8:08 am] Aliabbas Bhaisaheb: create table inventory(inventory_id number(5) constraint pk_i_id primary key,inventory_loc varchar2(20) constraint nn_i_loc not null);
+
+create table mall(mall_id number(5) constraint pk_m_id primary key,mall_loc varchar2(20) constraint nn_m_loc not null);
+
+create table item(item_id number(5) constraint pk_it_id primary key, it_name varchar2(20) not null,measuring_unit varchar2(20),amt number(10),expiry_dt date,constraint ck_m_u check(upper(measuring_unit) in ('TONNES','KILOGRAMS','GRAMS','LITRES','NUMBER')));
+
+create table mall_is_taking(mall_id number(5) constraint fl_m_id_1 references mall(mall_id),inventory_id number(5) constraint fk_i_id_1 references inventory(inventory_id),item_id number(5) constraint fk_it_id_4 references item(item_id),constraint pk_m_i_it primary key(mall_id,inventory_id,item_id));
+
+create table inventory_items(inventory_id number(5) constraint fk_i_id_2 references inventory(inventory_id),item_id number(5) constraint fk_it_id_1 references item(item_id),available_qty number(10),reorder_level number(10),constraint pk_i_it primary key(inventory_id,item_id));
+
+create table mall_items(mall_id number(5) constraint fl_m_id_2 references mall(mall_id),item_id number(5) constraint fk_it_id_2 references item(item_id),available_qty number(10),reorder_level number(10),constraint pk_m_it primary key(mall_id,item_id));
+
+create table supplier(s_id number(5) constraint pk_s_id primary key,s_name varchar2(20),s_loc varchar2(20) not null,contact_no number(10) constraint ck_c_no check(length(contact_no)=10));
+
+create table inventory_supplier_details(inventory_id number(5) constraint fk_i_id_3 references inventory(inventory_id),s_id number(5) constraint fk_s_id_1 references supplier(s_id),constraint pk_i_s primary key(inventory_id,s_id));
+
+create table inven_supp(inventory_id number(5),s_id number(5),item_id number(5) constraint fk_it_id_3 references item(item_id),constraint pk_i_s_it primary key(inventory_id,s_id,item_id),constraint fk_in_s_1 foreign key(inventory_id,s_id) references inventory_supplier_details(inventory_id,s_id));
+
+create table inventory_orders(order_id number(5) constraint pk_o_id primary key,inventory_id number(5),s_id number(5),item_id number(5),order_qty number(10),order_dt date,constraint fk_in_s_it foreign key(inventory_id,s_id,item_id) references inven_supp(inventory_id,s_id,item_id));
+
+create table billing(bill_id number(5) constraint pk_bill_id primary key,inventory_id number(5),s_id number(5),total_amt number(10),bill_dt date,bill_status varchar2(20) constraint ck_b_s check(upper(bill_status) in ('PAID','UNPAID')),constraint fk_in_s_2 foreign key(inventory_id,s_id) references inventory_supplier_details(inventory_id,s_id));
+
+create table mall_orders(order_id number(5) constraint pk_mo_id primary key,mall_id number(5),inventory_id number(5),item_id number(5),order_qty number(10),order_dt date,constraint fk_m_in_it foreign key(mall_id,inventory_id,item_id) references mall_is_taking(mall_id,inventory_id,item_id));
+[09/03, 8:11 am] Aliabbas Bhaisaheb: insert into inventory values (1, 'Delhi');
+insert into inventory values (2, 'Mumbai');
+
+insert into mall values (101, 'Mumbai Mall');
+insert into mall values (102, 'Delhi Mall');
+
+insert into item values (1001, 'Rice', 'Kilograms', 5, to_date('2024-12-31', 'YYYY-MM-DD'));
+insert into item values (1002, 'Sugar', 'Kilograms', 2, to_date('2024-11-30', 'YYYY-MM-DD'));
+
+insert into mall_is_taking values (101, 1, 1001);
+insert into mall_is_taking values (102, 2, 1002);
+
+insert into inventory_items values (1, 1001, 100, 20);
+insert into inventory_items values (2, 1002, 50, 10);
+
+insert into mall_items values (101, 1001, 50, 10);
+insert into mall_items values (102, 1002, 30, 5);
+
+insert into supplier values (501, 'ABC Traders', 'Delhi', 9876543210);
+insert into supplier values (502, 'XYZ Suppliers', 'Mumbai', 8765432109);
+
+insert into inventory_supplier_details values (1, 501);
+insert into inventory_supplier_details values (2, 502);
+
+insert into inven_supp values (1, 501, 1001);
+insert into inven_supp values (2, 502, 1002);

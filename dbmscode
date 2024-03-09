@@ -1,4 +1,4 @@
-[09/03, 8:08 am] Aliabbas Bhaisaheb: create table inventory(inventory_id number(5) constraint pk_i_id primary key,inventory_loc varchar2(20) constraint nn_i_loc not null);
+create table inventory(inventory_id number(5) constraint pk_i_id primary key,inventory_loc varchar2(20) constraint nn_i_loc not null);
 
 create table mall(mall_id number(5) constraint pk_m_id primary key,mall_loc varchar2(20) constraint nn_m_loc not null);
 
@@ -21,7 +21,7 @@ create table inventory_orders(order_id number(5) constraint pk_o_id primary key,
 create table billing(bill_id number(5) constraint pk_bill_id primary key,inventory_id number(5),s_id number(5),total_amt number(10),bill_dt date,bill_status varchar2(20) constraint ck_b_s check(upper(bill_status) in ('PAID','UNPAID')),constraint fk_in_s_2 foreign key(inventory_id,s_id) references inventory_supplier_details(inventory_id,s_id));
 
 create table mall_orders(order_id number(5) constraint pk_mo_id primary key,mall_id number(5),inventory_id number(5),item_id number(5),order_qty number(10),order_dt date,constraint fk_m_in_it foreign key(mall_id,inventory_id,item_id) references mall_is_taking(mall_id,inventory_id,item_id));
-[09/03, 8:11 am] Aliabbas Bhaisaheb: insert into inventory values (1, 'Delhi');
+insert into inventory values (1, 'Delhi');
 insert into inventory values (2, 'Mumbai');
 
 insert into mall values (101, 'Mumbai Mall');

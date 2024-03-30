@@ -33,3 +33,20 @@ exception
 when no_data_found then return 0;
 end calprice;
 /
+
+/checkstock func/
+
+create or replace function checkstock(m mall.mall_id%type,i item.item_id%type,qty_req number) return boolean
+as 
+a mall_items.available_qty%type;
+b boolean;
+begin
+select available_qty into a from mall_items where mall_id=m and item_id=i;
+if a>qty_req then b:=false;
+else b:=true;
+end if;
+return b;
+exception
+when no_data_found then return false;
+end checkstock;
+/

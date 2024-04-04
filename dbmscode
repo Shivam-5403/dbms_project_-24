@@ -50,3 +50,21 @@ exception
 when no_data_found then return false;
 end checkstock;
 /
+
+
+/generate mall orders/
+
+create or replace procedure generatemallorder(m mall.mall_id%type,i item.item_id%type)
+is
+reorder mall_items.reorder_level%type;
+o mall_orders.order_id%type;
+w warehouse.warehouse_id%type;
+begin
+select reorder_level into reorder from mall_items where mall_id=m and item_id=i;
+select max(order_id) into o from mall_orders;
+select warehouse_id into w from mall_supplier_details where mall_id=m and item_id=i;
+o:=o+1;
+insert into mall_orders values(o,reorder,sysdate,m,i,w);
+end generatemallorder;
+/
+

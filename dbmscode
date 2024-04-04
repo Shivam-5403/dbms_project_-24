@@ -68,3 +68,17 @@ insert into mall_orders values(o,reorder,sysdate,m,i,w);
 end generatemallorder;
 /
 
+/updatestock/
+
+create or replace procedure updatewarehousestock(w warehouse.warehouse_id%type,i item.item_id%type)
+is
+r warehouse_items%rowtype;
+o warehouse_bills.order_qty%type;
+b warehouse_bills.bill_status%type;
+begin
+select order_qty,bill_status into o,b from warehouse_bills where warehouse_id=w and item_id=i;
+if upper(b)='PAID' then
+    update warehouse_items set available_qty=nvl(available_qty,0)+o where warehouse_id=w and item_id=i;
+end if;
+end updatewarehousestock;
+/

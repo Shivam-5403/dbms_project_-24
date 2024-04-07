@@ -82,3 +82,77 @@ if upper(b)='PAID' then
 end if;
 end updatewarehousestock;
 /
+
+-- /triggers/
+
+-- to check the stock availability before inserting a new order for an item.    
+  
+create or replace trigger before_insert_new_ord_on_mallord
+before insert on mall_orders for each row
+declare
+	temp_ord_qty number;temp_r_lvl number;
+begin
+	select available_qty,reorder_level into temp_ord_qty,temp_r_lvl from warehouse_items 
+	where item_id=:new.item_id and warehouse_id=:new.warehouse_id;
+
+	if temp_ord_qty < :new.order_qty then
+        raise_application_error(-20000, 'Insufficient stock available in the warehouse');
+    end if;
+	if temp_ord_qty-:new.order_qty < temp_r_lvl then
+		raise_application_error(-20000,'Insufficient stock available in the warehouse /and/ stock is below reorder level.... ');
+	end if;
+end before_insert_new_ord_on_mallord; 
+
+
+-- to update the stock level in the warehouse after inserting a new order
+
+create or replace trigger update_warehouse_stock_after_ins_in_mord
+after insert on mall_orders for each row
+begin
+	-- this will update warehouse stock
+	update warehouse_items set 
+	available_qty=available_qty-:new.order_qty
+	where  warehouse_id=:new.warehouse_id
+    and item_id=:new.item_id;
+	-- this will update mall stock
+	update mall_items set
+	available_qty=available_qty+:new.order_qty
+	where mall_id=:new.mall_id and item_id=:new.item_id;
+	-- update on both sides....
+end update_warehouse_stock_after_ins_in_mord;
+
+
+-- to check the stock availability before updating an existing order. 
+
+create or replace trigger chk_stock_before_upd_exiting_ord
+before update on mall_orders for each row
+declare
+	temp_ord_qty number;temp_r_lvl number;
+begin
+	select available_qty,reorder_level into temp_ord_qty,temp_r_lvl from warehouse_items 
+	where item_id=:new.item_id and warehouse_id=:new.warehouse_id;
+
+	if temp_ord_qty < :new.order_qty then
+        raise_application_error(-20000, 'Insufficient stock available in the warehouse .. Can not update order quantity..');
+    end if;
+	if temp_ord_qty-:new.order_qty < temp_r_lvl then
+		raise_application_error(-20000,'Insufficient stock available in the warehouse /and/ stock is below reorder level.... so can not update order quantity..');
+	end if;
+end chk_stock_before_upd_exiting_ord;
+
+-- to update the stock level in the warehouse after updating an existing order. 
+
+create or replace trigger update_warehouse_stock_after_upd_existing_mord
+after update on mall_orders for each row
+begin
+	-- this will update warehouse stock
+	update warehouse_items set 
+	available_qty=available_qty-:new.order_qty
+	where  warehouse_id=:new.warehouse_id
+    and item_id=:new.item_id;
+	-- this will update mall stock
+	update mall_items set
+	available_qty=available_qty+:new.order_qty
+	where mall_id=:new.mall_id and item_id=:new.item_id;
+	-- update on both sides....
+end update_warehouse_stock_after_upd_existing_mord;

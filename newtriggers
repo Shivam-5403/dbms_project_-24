@@ -1,0 +1,11 @@
+create or replace trigger m1
+after update on mall_items for each row
+declare
+	temp_ord_qty number;temp_r_lvl number;
+begin
+	select :new.available_qty,reorder_level into temp_ord_qty,temp_r_lvl from mall_items where item_id=:new.item_id and mall_id=:new.mall_id;
+
+	if temp_ord_qty < temp_r_lvl then
+        generatemallorder(:new.mall_id,:new.item_id);
+    end if;
+end m1; 

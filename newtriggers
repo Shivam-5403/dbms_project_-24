@@ -25,3 +25,16 @@ select max(s_id) into s from warehouse_supplier_details where warehouse_id=w and
 o:=o+1;
 insert into warehouse_bills values(o,w,i,s,reorder,sysdate,calprice(i,reorder),'PAID');
 end generatewareorder;
+
+
+
+create or replace trigger t1 
+after insert on warehouse_bills for each row
+declare
+
+begin
+if upper(:new.bill_status)='PAID' then
+    update warehouse_items set available_qty=available_qty+:new.order_qty where warehouse_id=:new.warehouse_id and item_id=:new.item_id;
+end if;
+end t1;
+/

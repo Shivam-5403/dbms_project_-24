@@ -33,8 +33,6 @@ after insert on warehouse_bills for each row
 declare
 
 begin
-if upper(:new.bill_status)='PAID' then
-    update warehouse_items set available_qty=available_qty+:new.order_qty where warehouse_id=:new.warehouse_id and item_id=:new.item_id;
-end if;
+updatewarehousestock(:new.warehouse_id,:new.item_id);
 end t1;
 /
